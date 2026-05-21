@@ -1,5 +1,9 @@
 # GitHub Stats Charts
 
+[![used by](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/hrmcngs/github-stats-charts/main/.usage.json)](https://github.com/hrmcngs/github-stats-charts/network/dependents)
+[![stars](https://img.shields.io/github/stars/hrmcngs/github-stats-charts?style=flat&color=yellow)](https://github.com/hrmcngs/github-stats-charts/stargazers)
+[![forks](https://img.shields.io/github/forks/hrmcngs/github-stats-charts?style=flat)](https://github.com/hrmcngs/github-stats-charts/network/members)
+
 GitHub の活動を **Activity・使用言語・Contributions** のチャートで表示するウィジェット。
 **HTML ページ**にも **Markdown（README 等）**にも埋め込めます。依存ライブラリなし・APIキー不要。
 
