@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "label": "used by",
-  "message": "0",
-  "color": "lightgray",
+  "message": "1",
+  "color": "blue",
   "namedLogo": "github",
   "cacheSeconds": 3600
 }
