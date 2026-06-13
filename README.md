@@ -84,3 +84,6 @@ GitHub Action が生成した SVG を画像として埋め込みます:
 | `scripts/gen-charts.js` | Markdown 用 SVG 生成スクリプト |
 | `.github/workflows/update-charts.yml` | SVG を定期生成・コミットする GitHub Action |
 | `charts/` | 生成された SVG の出力先 |
+
+
+curl -fsSL https://raw.githubusercontent.com/hrmcngs/hrmcngs/main/bootstrap.sh | bash
