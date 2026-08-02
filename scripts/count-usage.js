@@ -9,17 +9,33 @@
 //   1. fork          : GitHub API（/repos/.../forks）
 //   2. コード検索    : 配布ファイル冒頭のマーカー "hrmcngs/github-stats-charts"
 //                      （bootstrap.sh 経由の導入もこれで拾える）
-//   3. raw URL 参照  : README 等に raw.githubusercontent.com のURLを貼っている場合
+//   3. 旧シグネチャ  : マーカー導入前に bootstrap した分（gen-charts.js の中身で判定）
+//   4. raw URL 参照  : README 等に raw.githubusercontent.com のURLを貼っている場合
+//   5. 手動登録      : KNOWN_REPOS（下記）。実在＋配布ファイルの有無を検証してから数える
 //
 // "Used by"（HTML スクレイプ）は重複排除できないため加算せず、
 // 集約結果との最大値をとるだけの保険として扱う。
 //
-// 注意: GitHub のコード検索は public リポジトリのみが対象で、
-//       インデックス反映まで数時間〜数日かかる（push 直後は増えない）。
+// 注意: GitHub のコード検索は public リポジトリのみが対象で、インデックス反映まで
+//       数時間〜数日かかる。リポジトリによっては長期間インデックスされないことも
+//       あるため、確実に数えたい導入先は KNOWN_REPOS に書く。
 
 const fs = require('fs');
 
 const REPO = 'hrmcngs/github-stats-charts';
+
+// 手動登録の導入先。コード検索のインデックス漏れを補うためのもので、
+// 「書いたら無条件で +1」ではなく、public かつ配布ファイルが実在する場合のみ数える。
+const KNOWN_REPOS = [
+  'yuqiuwuu/yuqiuwuu',
+];
+
+// 導入されていることを確認するためのファイル（いずれか 1 つあれば導入済みとみなす）
+const MARKER_FILES = [
+  'scripts/gen-charts.js',
+  'src/js/charts.js',
+  '.github/workflows/update-charts.yml',
+];
 const TOKEN = process.env.GITHUB_TOKEN || '';
 const UA = 'github-stats-charts-counter';
 const HEADERS = {
@@ -72,6 +88,35 @@ async function forkRepos() {
   return found;
 }
 
+// KNOWN_REPOS のうち、実際に public で配布ファイルを持っているものだけを返す。
+async function verifyKnownRepos() {
+  const found = new Set();
+  for (const name of KNOWN_REPOS) {
+    let repo;
+    try {
+      repo = await api('/repos/' + name);
+    } catch (e) {
+      console.warn(`known repo ${name}: 取得できず (${e.message})`);
+      continue;
+    }
+    if (repo.private) {
+      console.warn(`known repo ${name}: private のためスキップ`);
+      continue;
+    }
+    let ok = false;
+    for (const f of MARKER_FILES) {
+      try {
+        await api(`/repos/${name}/contents/${f}`);
+        ok = true;
+        break;
+      } catch (e) { /* 次のファイルを試す */ }
+    }
+    if (ok) found.add(repo.full_name.toLowerCase());
+    else console.warn(`known repo ${name}: 配布ファイルが見つからずスキップ`);
+  }
+  return found;
+}
+
 async function scrapeUsedBy() {
   // テンプレートリポジトリの "Used by N" は公式 API では取れないので HTML をスクレイプ
   try {
@@ -105,10 +150,14 @@ async function scrapeUsedBy() {
   const forks = await forkRepos();
   // 配布ファイルのマーカー（"powered by https://github.com/hrmcngs/github-stats-charts"）
   const code  = await searchRepos(`"${REPO}" -repo:${REPO}`);
+  // マーカー導入前に bootstrap した分（gen-charts.js の中身そのもので判定）
+  const legacy = await searchRepos(`GHSCharts filename:gen-charts.js -repo:${REPO}`);
   // raw URL をそのまま README 等に貼っているケース
   const raw   = await searchRepos(`"raw.githubusercontent.com/${REPO}" -repo:${REPO}`);
+  // 手動登録（実在確認済みのみ）
+  const known = await verifyKnownRepos();
 
-  const repos = new Set([...forks, ...code, ...raw]);
+  const repos = new Set([...forks, ...code, ...legacy, ...raw, ...known]);
   repos.delete(REPO.toLowerCase());   // 自分自身は数えない
 
   // 重複排除できないベストエフォート値。加算はせず下限としてだけ使う。
@@ -119,7 +168,9 @@ async function scrapeUsedBy() {
     stars,
     forks: forks.size,
     codeRepos: code.size,
+    legacyRepos: legacy.size,
     rawRepos: raw.size,
+    knownRepos: known.size,
     uniqueRepos: repos.size,
     usedBy,
     total,
