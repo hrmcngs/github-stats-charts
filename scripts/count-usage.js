@@ -1,13 +1,21 @@
 // "Use this template" 以外の利用も含めたカウントを集計し .usage.json に書き出す。
 // 出力は shields.io endpoint 形式の JSON で、README のバッジから参照される。
 //
-// 集計対象:
-//   1. fork 数                    : GitHub API
-//   2. "Used by" 数（テンプレート）: リポジトリ HTML をスクレイプ（公式 API なし・ベストエフォート）
-//   3. コード検索ヒット数         : 他リポジトリで "hrmcngs/github-stats-charts" を含むファイル数
+// 数えるのは「ヒットしたファイル数」ではなく「利用しているリポジトリ数」。
+// 1 リポジトリに gen-charts.js / charts.js / update-charts.yml と複数の
+// マーカーが入るため、ファイル単位で数えると 1 件の導入が 3 件に膨らむ。
 //
-// 重複を避けるため、コードヒットは raw URL のヒットと最大値で集約し、
-// total = forks + codeHits + usedBy としている。
+// 収集元（すべて重複排除して 1 つの Set に集約）:
+//   1. fork          : GitHub API（/repos/.../forks）
+//   2. コード検索    : 配布ファイル冒頭のマーカー "hrmcngs/github-stats-charts"
+//                      （bootstrap.sh 経由の導入もこれで拾える）
+//   3. raw URL 参照  : README 等に raw.githubusercontent.com のURLを貼っている場合
+//
+// "Used by"（HTML スクレイプ）は重複排除できないため加算せず、
+// 集約結果との最大値をとるだけの保険として扱う。
+//
+// 注意: GitHub のコード検索は public リポジトリのみが対象で、
+//       インデックス反映まで数時間〜数日かかる（push 直後は増えない）。
 
 const fs = require('fs');
 
@@ -29,15 +37,39 @@ async function api(path) {
   return r.json();
 }
 
-async function search(q) {
-  const url = '/search/code?q=' + encodeURIComponent(q) + '&per_page=1';
+// コード検索の結果からリポジトリ名（owner/repo）の集合を返す。
+// search/code は 1 ページ最大 100 件・合計 1000 件までなので上限までページングする。
+async function searchRepos(q) {
+  const found = new Set();
   try {
-    const d = await api(url);
-    return d.total_count || 0;
+    for (let page = 1; page <= 10; page++) {
+      const url = '/search/code?q=' + encodeURIComponent(q) + '&per_page=100&page=' + page;
+      const d = await api(url);
+      const items = d.items || [];
+      for (const it of items) {
+        const name = it.repository && it.repository.full_name;
+        if (name) found.add(name.toLowerCase());
+      }
+      if (items.length < 100) break;
+    }
   } catch (e) {
     console.warn('search failed:', e.message);
-    return 0;
   }
+  return found;
+}
+
+async function forkRepos() {
+  const found = new Set();
+  try {
+    for (let page = 1; page <= 10; page++) {
+      const d = await api(`/repos/${REPO}/forks?per_page=100&page=${page}`);
+      for (const f of d) if (f.full_name) found.add(f.full_name.toLowerCase());
+      if (d.length < 100) break;
+    }
+  } catch (e) {
+    console.warn('forks failed:', e.message);
+  }
+  return found;
 }
 
 async function scrapeUsedBy() {
@@ -62,27 +94,37 @@ async function scrapeUsedBy() {
 }
 
 (async () => {
-  let forks = 0, stars = 0;
+  let stars = 0;
   try {
     const repoData = await api('/repos/' + REPO);
-    forks = repoData.forks_count || 0;
     stars = repoData.stargazers_count || 0;
   } catch (e) {
     console.warn('repo info failed:', e.message);
   }
 
-  // 他リポジトリで "owner/repo" を直接参照しているコード
-  const codeHits = await search(`"${REPO}" -repo:${REPO}`);
+  const forks = await forkRepos();
+  // 配布ファイルのマーカー（"powered by https://github.com/hrmcngs/github-stats-charts"）
+  const code  = await searchRepos(`"${REPO}" -repo:${REPO}`);
   // raw URL をそのまま README 等に貼っているケース
-  const rawHits  = await search(`"raw.githubusercontent.com/${REPO}" -repo:${REPO}`);
-  // テンプレート利用数（ベストエフォート）
-  const usedBy   = await scrapeUsedBy();
+  const raw   = await searchRepos(`"raw.githubusercontent.com/${REPO}" -repo:${REPO}`);
 
-  // 重複を避けて最大値で集約（raw URL のヒットは概ね codeHits に含まれる）
-  const fromCode = Math.max(codeHits, rawHits);
-  const total    = forks + fromCode + usedBy;
+  const repos = new Set([...forks, ...code, ...raw]);
+  repos.delete(REPO.toLowerCase());   // 自分自身は数えない
 
-  console.log(JSON.stringify({ forks, stars, codeHits, rawHits, usedBy, total }, null, 2));
+  // 重複排除できないベストエフォート値。加算はせず下限としてだけ使う。
+  const usedBy = await scrapeUsedBy();
+  const total  = Math.max(repos.size, usedBy);
+
+  console.log(JSON.stringify({
+    stars,
+    forks: forks.size,
+    codeRepos: code.size,
+    rawRepos: raw.size,
+    uniqueRepos: repos.size,
+    usedBy,
+    total,
+    repos: [...repos].sort(),
+  }, null, 2));
 
   const out = {
     schemaVersion: 1,

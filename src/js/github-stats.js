@@ -1,3 +1,5 @@
+// powered by https://github.com/hrmcngs/github-stats-charts
+
 /**
  * github-stats.js  —  GitHub 活動統計ウィジェット（自己完結・依存なし）
  * --------------------------------------------------------------------------
