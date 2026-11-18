@@ -34,6 +34,24 @@ GitHub の活動を **Activity・使用言語・Contributions** のチャート�
 
 → [`index.html`](index.html) が動く例です。
 
+### サイトのテーマ色に合わせる
+
+ウィジェットの色はCSS変数で上書きできます。ライト/ダーク切り替えで
+これらの変数を変更すると、チャートのSVGも再描画なしで追従します。
+
+```css
+.ghs {
+  --ghs-bg: var(--page-bg);
+  --ghs-border: var(--page-border);
+  --ghs-text: var(--page-text);
+  --ghs-muted: var(--page-muted);
+  --ghs-accent: var(--page-accent);
+}
+```
+
+`--ghs-bg`、`--ghs-border`、`--ghs-text`、`--ghs-muted`、
+`--ghs-accent`にはGitHub Dark相当の既定色があります。
+
 ## Markdown / README で使う
 
 GitHub Action が生成した SVG を画像として埋め込みます:
