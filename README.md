@@ -34,6 +34,8 @@ GitHub の活動を **Activity・使用言語・Contributions** のチャート�
 
 → [`index.html`](index.html) が動く例です。
 
+Activity のレーダーチャートは、各頂点にカーソルを合わせると項目名と数値を表示します。Tab キーで頂点にフォーカスしても確認できます。
+
 ### サイトのテーマ色に合わせる
 
 ウィジェットの色はCSS変数で上書きできます。ライト/ダーク切り替えで
@@ -55,6 +57,8 @@ GitHub の活動を **Activity・使用言語・Contributions** のチャート�
 ## Markdown / README で使う
 
 GitHub Action が生成した SVG を画像として埋め込みます:
+
+README の画像埋め込みでは頂点のホバー表示は利用できません。数値をホバーで確認するには、HTML のウィジェット、または SVG ファイルをブラウザで直接開いてください。
 
 ```markdown
 ![activity](charts/activity.svg)

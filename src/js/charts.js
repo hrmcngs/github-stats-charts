@@ -239,10 +239,20 @@
     items.forEach((d, i) => {
       const [x, y] = pt(i, toR(d.value || 0));
       dpts.push(`${x},${y}`);
-      dots += `<circle cx="${x}" cy="${y}" r="3.4" fill="${accent}" stroke="${COL.bg}" stroke-width="1.5"><title>${esc(d.label)}: ${esc(disp(d))}</title></circle>`;
+      const text = `${d.label}: ${disp(d)}`;
+      const width = Math.min(W - 16, Math.max(80, Array.from(text).length * 8 + 20));
+      const tx = Math.max(8, Math.min(W - width - 8, x - width / 2));
+      const ty = y - 42;
+      dots += `<g class="ghs-radar-point" tabindex="0" aria-label="${esc(text)}">`
+        + `<circle cx="${x}" cy="${y}" r="3.4" fill="${accent}" stroke="${COL.bg}" stroke-width="1.5"/>`
+        + `<circle cx="${x}" cy="${y}" r="12" fill="transparent" pointer-events="all"/>`
+        + `<g class="ghs-radar-tooltip" pointer-events="none" aria-hidden="true">`
+        + `<rect x="${tx}" y="${ty}" width="${width}" height="28" rx="6" fill="${COL.bg}" stroke="${COL.grid}"/>`
+        + `<text x="${tx + width / 2}" y="${ty + 18}" text-anchor="middle" font-size="12" fill="${COL.text}">${esc(text)}</text></g></g>`;
     });
     const data = `<polygon points="${dpts.join(' ')}" fill="${rgba(accent, 0.38)}" stroke="${accent}" stroke-width="2.5" stroke-linejoin="round"/>${dots}`;
-    return svg(W, H, rings + axes + scaleLabels + labels + data);
+    const hoverStyle = `<style>.ghs-radar-tooltip{visibility:hidden}.ghs-radar-point:hover .ghs-radar-tooltip,.ghs-radar-point:focus .ghs-radar-tooltip{visibility:visible}</style>`;
+    return svg(W, H, hoverStyle + rings + axes + scaleLabels + labels + data);
   }
 
   // ── Contributions 立体棒グラフ（アイソメトリック） ───
