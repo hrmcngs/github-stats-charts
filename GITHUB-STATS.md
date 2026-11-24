@@ -31,18 +31,17 @@ GitHub の活動統計（**Activity / 使用言語 / Contributions**）を、複
 
 ## 導入手順
 
-1. `src/js/charts.js` と `src/js/github-stats.js` をコピー
-2. スクリプトを読み込む（**charts.js が先**）
-3. 表示したい場所に `<div>` を置く
+1. 表示したい場所に `<div>` を置く
+2. 本リポジトリの `main` を参照するスクリプトを読み込む
 
 ```html
-<script src="charts.js"></script>
-<script src="github-stats.js"></script>
-
 <div data-github-user="ユーザー名"></div>
+<script src="https://cdn.jsdelivr.net/gh/hrmcngs/github-stats-charts@main/src/js/embed.js" defer></script>
 ```
 
 これだけで、ページ表示時に自動でデータを取得して描画します（CSS も自動注入）。
+
+本リポジトリの更新は、CDN・ブラウザのキャッシュ更新後、次回のページ表示に反映されます。コピー済みの `charts.js`・`github-stats.js` の読み込みは上記1つに置き換えてください。ローカルで確認する場合は `src/js/embed.js` を読み込めます。
 
 ## 設定オプション（data 属性）
 
@@ -99,7 +98,7 @@ GitHub Action（定期実行）
 
 ## 導入手順
 
-1. `scripts/gen-charts.js`・`src/js/charts.js`・`.github/workflows/update-charts.yml` をリポジトリに置く
+1. リポジトリのルートで `curl -fsSL https://raw.githubusercontent.com/hrmcngs/hrmcngs/main/bootstrap.sh | bash` を実行し、配置されたファイルをコミット・プッシュする（Node.js 20以降が必要）。既存の導入先でも再実行でき、`CONFIG` は保持される
 2. リポジトリの **Settings → Actions → General → Workflow permissions** を「Read and write」にする
 3. Actions タブから `Update chart SVGs` を手動実行（または12時間ごとに自動実行）
 4. `charts/` に SVG が生成される
@@ -141,7 +140,7 @@ const CONFIG = {
 - `charts` に項目を足す → 別の種類の SVG も同時生成（例: `activity.svg` と `activity-pie.svg` の両方）
 - 言語チャートは `exclude` / `pin` / `other` も指定可
 
-編集して Action を再実行すれば、新しい SVG が反映されます。
+本リポジトリでは、描画ライブラリや生成スクリプトを `main` に更新するとActionがSVGを再生成します。インストール先では12時間ごとの実行時に `scripts/sync-upstream.js` が本リポジトリの最新共通コードを取得してからSVGを生成します。`CONFIG` のユーザー名・色・言語設定は保持します。共通コード部分に直接加えた独自変更は最新版に置き換わります。即時に取り込むにはActionsを手動実行してください。旧インストール先は、上記コマンドの再実行とコミット・プッシュで移行できます。
 
 ---
 
@@ -195,6 +194,7 @@ GitHub の**未認証** API はアクセス元 IP ごとに制限があります
 
 | ファイル | 役割 |
 |---|---|
+| `src/js/embed.js` | 外部サイト用の共通読み込みスクリプト |
 | `src/js/charts.js` | SVG チャート描画ライブラリ（HTML・Markdown 共用）|
 | `src/js/github-stats.js` | HTML 用ライブウィジェット |
 | `scripts/gen-charts.js` | Markdown 用 SVG 生成スクリプト（Action から実行）|

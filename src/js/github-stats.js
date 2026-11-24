@@ -6,10 +6,9 @@
  * GitHub API（CORS対応・未認証）からユーザーの活動を取得し、
  * 統計カード＋使用言語グラフを描画する。CSSも自身で注入する。
  *
- * ◆ 他のサイト/repo での使い方（このファイルをコピーするだけ） ◆
- *   1. charts.js と github-stats.js をコピーして読み込む（charts.js が先）:
- *        <script src="charts.js"></script>
- *        <script src="github-stats.js"></script>
+ * ◆ 他のサイト/repo での使い方（main の更新を自動反映） ◆
+ *   1. 共通スクリプトを読み込む:
+ *        <script src="https://cdn.jsdelivr.net/gh/hrmcngs/github-stats-charts@main/src/js/embed.js" defer></script>
  *   2. 表示したい場所に div を置く:
  *        <div data-github-user="ユーザー名"></div>
  *   （任意）アクセントカラー : data-accent="#3ecfcf"
