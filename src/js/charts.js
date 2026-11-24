@@ -33,6 +33,7 @@
     grid: 'var(--ghs-border, #30363d)',
     text: 'var(--ghs-text, #e6edf3)',
     muted: 'var(--ghs-muted, #7d8590)',
+    track: 'color-mix(in srgb, var(--ghs-text, #e6edf3) 6%, transparent)',
   };
 
   // GitHub Linguist の言語カラー（未知の言語は灰色）
@@ -109,8 +110,8 @@
       const c = d.color || accent;
       const w = Math.max(norm(d.value, max, scale) * trackW, 3);
       body += `<text x="${labelW - 12}" y="${cy + 4}" text-anchor="end" font-size="12" fill="${COL.text}">${esc(d.label)}</text>`
-        + `<rect x="${trackX}" y="${cy - 6}" width="${trackW}" height="12" rx="6" fill="color-mix(in srgb, var(--ghs-text, #e6edf3) 6%, transparent)"/>`
-        + `<rect x="${trackX}" y="${cy - 6}" width="${w.toFixed(1)}" height="12" rx="6" fill="${c}"><title>${esc(d.label)}: ${esc(disp(d))}</title></rect>`
+        + `<rect x="${trackX}" y="${cy - 6}" width="${trackW}" height="12" rx="6" fill="${COL.track}"/>`
+        + `<rect x="${trackX}" y="${cy - 6}" width="${w.toFixed(1)}" height="12" rx="6" fill="${c}" data-ghs-tooltip="${esc(d.label)}: ${esc(disp(d))}"><title>${esc(d.label)}: ${esc(disp(d))}</title></rect>`
         + `<text x="${W - valW + 10}" y="${cy + 4}" font-size="11" font-family="monospace" fill="${COL.muted}">${esc(disp(d))}</text>`;
     });
     return svg(W, H, body);
@@ -131,7 +132,7 @@
       const cx = padX + slot * i + slot / 2;
       const bh = Math.max(norm(d.value, max, scale) * plotH, 3);
       const y = padT + plotH - bh;
-      body += `<rect x="${(cx - bw / 2).toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${bh.toFixed(1)}" rx="3" fill="${d.color || accent}"><title>${esc(d.label)}: ${esc(disp(d))}</title></rect>`
+      body += `<rect x="${(cx - bw / 2).toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${bh.toFixed(1)}" rx="3" fill="${d.color || accent}" data-ghs-tooltip="${esc(d.label)}: ${esc(disp(d))}"><title>${esc(d.label)}: ${esc(disp(d))}</title></rect>`
         + `<text x="${cx.toFixed(1)}" y="${(y - 7).toFixed(1)}" text-anchor="middle" font-size="11" font-family="monospace" fill="${COL.text}">${esc(disp(d))}</text>`
         + `<text x="${cx.toFixed(1)}" y="${H - padB + 19}" text-anchor="middle" font-size="11" fill="${COL.muted}">${esc(d.label)}</text>`;
     });
@@ -153,7 +154,9 @@
     items.forEach((d, i) => {
       const x = xAt(i), y = yAt(d.value);
       line += `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`;
-      dots += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.6" fill="${accent}" stroke="${COL.bg}" stroke-width="1.5"><title>${esc(d.label)}: ${esc(disp(d))}</title></circle>`;
+      const tip = `${esc(d.label)}: ${esc(disp(d))}`;
+      dots += `<g><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.6" fill="${accent}" stroke="${COL.bg}" stroke-width="1.5"/>`
+        + `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="12" fill="transparent" pointer-events="all" data-ghs-tooltip="${tip}"><title>${tip}</title></circle></g>`;
       labels += `<text x="${x.toFixed(1)}" y="${H - padB + 19}" text-anchor="middle" font-size="11" fill="${COL.muted}">${esc(d.label)}</text>`;
     });
     const fill = `M${xAt(0).toFixed(1)} ${baseY} ${line.replace(/^M/, 'L')} L${xAt(n - 1).toFixed(1)} ${baseY} Z`;
@@ -180,7 +183,7 @@
       const a2 = ang + frac * Math.PI * 2;
       const big = frac > 0.5 ? 1 : 0;
       slices += `<path d="M${arcP(rOut, ang)} A${rOut} ${rOut} 0 ${big} 1 ${arcP(rOut, a2)} `
-        + `L${arcP(rIn, a2)} A${rIn} ${rIn} 0 ${big} 0 ${arcP(rIn, ang)} Z" fill="${sliceColor(d, i)}">`
+        + `L${arcP(rIn, a2)} A${rIn} ${rIn} 0 ${big} 0 ${arcP(rIn, ang)} Z" fill="${sliceColor(d, i)}" data-ghs-tooltip="${esc(d.label)}: ${esc(disp(d))} (${Math.round(frac * 100)}%)">`
         + `<title>${esc(d.label)}: ${esc(disp(d))} (${Math.round(frac * 100)}%)</title></path>`;
       ang = a2;
     });
@@ -239,20 +242,12 @@
     items.forEach((d, i) => {
       const [x, y] = pt(i, toR(d.value || 0));
       dpts.push(`${x},${y}`);
-      const text = `${d.label}: ${disp(d)}`;
-      const width = Math.min(W - 16, Math.max(80, Array.from(text).length * 8 + 20));
-      const tx = Math.max(8, Math.min(W - width - 8, x - width / 2));
-      const ty = y - 42;
-      dots += `<g class="ghs-radar-point" tabindex="0" aria-label="${esc(text)}">`
-        + `<circle cx="${x}" cy="${y}" r="3.4" fill="${accent}" stroke="${COL.bg}" stroke-width="1.5"/>`
-        + `<circle cx="${x}" cy="${y}" r="12" fill="transparent" pointer-events="all"/>`
-        + `<g class="ghs-radar-tooltip" pointer-events="none" aria-hidden="true">`
-        + `<rect x="${tx}" y="${ty}" width="${width}" height="28" rx="6" fill="${COL.bg}" stroke="${COL.grid}"/>`
-        + `<text x="${tx + width / 2}" y="${ty + 18}" text-anchor="middle" font-size="12" fill="${COL.text}">${esc(text)}</text></g></g>`;
+      const tip = `${esc(d.label)}: ${esc(disp(d))}`;
+      dots += `<g><circle cx="${x}" cy="${y}" r="3.4" fill="${accent}" stroke="${COL.bg}" stroke-width="1.5"/>`
+        + `<circle cx="${x}" cy="${y}" r="14" fill="transparent" pointer-events="all" data-ghs-tooltip="${tip}"><title>${tip}</title></circle></g>`;
     });
     const data = `<polygon points="${dpts.join(' ')}" fill="${rgba(accent, 0.38)}" stroke="${accent}" stroke-width="2.5" stroke-linejoin="round"/>${dots}`;
-    const hoverStyle = `<style>.ghs-radar-tooltip{visibility:hidden}.ghs-radar-point:hover .ghs-radar-tooltip,.ghs-radar-point:focus .ghs-radar-tooltip{visibility:visible}</style>`;
-    return svg(W, H, hoverStyle + rings + axes + scaleLabels + labels + data);
+    return svg(W, H, rings + axes + scaleLabels + labels + data);
   }
 
   // ── Contributions 立体棒グラフ（アイソメトリック） ───
@@ -307,7 +302,7 @@
         const u = (p) => `${p.x.toFixed(1)},${(p.y - h).toFixed(1)}`;
         body += `<polygon points="${u(D)} ${u(Cc)} ${g(Cc)} ${g(D)}" fill="${f.left}"/>`
           + `<polygon points="${u(B)} ${u(Cc)} ${g(Cc)} ${g(B)}" fill="${f.right}"/>`
-          + `<polygon points="${u(A)} ${u(B)} ${u(Cc)} ${u(D)}" fill="${f.top}">`
+          + `<polygon points="${u(A)} ${u(B)} ${u(Cc)} ${u(D)}" fill="${f.top}"${cell ? ` data-ghs-tooltip="${esc(cell.date)} ・ ${cell.count} contributions"` : ''}>`
           + `<title>${cell ? esc(cell.date) + ' ・ ' + cell.count + ' contributions' : ''}</title></polygon>`;
       }
     }
