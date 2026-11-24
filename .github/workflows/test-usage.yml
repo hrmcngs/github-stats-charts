@@ -6,6 +6,9 @@ on:
       - 'scripts/count-usage.js'
       - 'scripts/register-installation.js'
       - 'tests/usage.test.js'
+      - 'tests/push-updates.test.js'
+      - '.github/workflows/usage-counter.yml'
+      - '.github/workflows/update-charts.yml'
       - 'bootstrap.sh'
       - '.github/workflows/test-usage.yml'
   pull_request:
@@ -13,6 +16,9 @@ on:
       - 'scripts/count-usage.js'
       - 'scripts/register-installation.js'
       - 'tests/usage.test.js'
+      - 'tests/push-updates.test.js'
+      - '.github/workflows/usage-counter.yml'
+      - '.github/workflows/update-charts.yml'
       - 'bootstrap.sh'
       - '.github/workflows/test-usage.yml'
 
@@ -27,5 +33,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - run: node --test tests/usage.test.js
+      - run: node --test tests/usage.test.js tests/push-updates.test.js
       - run: bash -n bootstrap.sh

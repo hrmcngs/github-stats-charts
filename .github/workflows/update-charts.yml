@@ -31,6 +31,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -49,6 +52,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Commit charts if changed
+        env:
+          TARGET_BRANCH: ${{ github.ref_name }}
         run: |
           git add charts scripts src/js
           if git diff --cached --quiet; then
@@ -57,5 +62,14 @@ jobs:
             git config user.name  "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git commit -m "chore: update chart SVGs [skip ci]"
-            git push
+            # 使用数更新やユーザーのpushと競合しても、先行した変更を取り込む。
+            for attempt in 1 2 3 4; do
+              git fetch origin "$TARGET_BRANCH"
+              git rebase FETCH_HEAD
+              if git push origin "HEAD:refs/heads/$TARGET_BRANCH"; then
+                exit 0
+              fi
+            done
+            echo "リモート更新の競合でpushできませんでした。" >&2
+            exit 1
           fi
