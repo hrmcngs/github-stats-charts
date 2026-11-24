@@ -186,6 +186,7 @@ async function scrapeUsedBy() {
     cacheSeconds: 3600,
   };
   fs.writeFileSync('.usage.json', JSON.stringify(out, null, 2) + '\n');
+  require('./badges.js').writeBadges('badges', { usage: total, stars, forks: forks.size });
   console.log('Wrote .usage.json (message=' + out.message + ')');
 })().catch(e => {
   console.error(e);

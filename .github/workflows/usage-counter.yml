@@ -1,7 +1,7 @@
 name: Update usage counter
 
 # "Use this template" 以外の利用も含めて使用数を集計し .usage.json を更新する。
-# README の shields.io endpoint バッジが参照する JSON を生成。
+# README 用のローカルSVGバッジと .usage.json を生成。
 
 on:
   schedule:
@@ -11,6 +11,7 @@ on:
     branches: [main]
     paths-ignore:
       - '.usage.json'           # 自分自身の commit では走らない
+      - 'badges/**'
       - 'charts/**'             # チャート更新では走らない
 
 permissions:
@@ -39,7 +40,7 @@ jobs:
 
       - name: Commit if changed
         run: |
-          git add .usage.json
+          git add .usage.json badges
           if git diff --cached --quiet; then
             echo "usage に変化なし — コミットしません。"
           else
