@@ -84,6 +84,8 @@ GitHub の活動統計（**Activity / 使用言語 / Contributions**）を、複
 
 # B. Markdown での使い方
 
+インストーラーは公開導入先を利用数集計へ登録できます。GitHub認証と登録方法、非公開・未登録の集計範囲は [README の利用登録](README.md#利用登録) を参照してください。
+
 `.md` では JavaScript が動かないので、チャートを **SVG 画像**として用意し、画像として埋め込みます。
 
 ## 仕組み

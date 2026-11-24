@@ -29,10 +29,11 @@ NODE
 fi
 cp "$setup_tmp/update-charts.yml" .github/workflows/update-charts.yml
 node scripts/gen-charts.js
+node scripts/register-installation.js
 cat <<'TEXT'
 セットアップ完了。既存の CONFIG は保持しました。
 次の変更をコミット・プッシュしてください:
-  git add scripts src/js .github/workflows/update-charts.yml charts
+  git add scripts src/js .github charts
   git commit -m "Enable automatic chart code updates"
   git push
 Actions の Workflow permissions を「Read and write」にしてください。

@@ -1,8 +1,39 @@
 {
   "schemaVersion": 1,
   "label": "used by",
-  "message": "1",
+  "message": "2+",
   "color": "blue",
   "namedLogo": "github",
-  "cacheSeconds": 3600
+  "cacheSeconds": 3600,
+  "metric": "verified-public-installations",
+  "status": "partial",
+  "checkedAt": "2026-11-24T07:06:27.095Z",
+  "lastSuccessfulAt": null,
+  "repos": [
+    "hrmcngs/hrmcngs",
+    "yuqiuwuu/yuqiuwuu"
+  ],
+  "records": [
+    {
+      "repository": "hrmcngs/hrmcngs",
+      "lastVerifiedAt": null,
+      "status": "unavailable"
+    },
+    {
+      "repository": "yuqiuwuu/yuqiuwuu",
+      "lastVerifiedAt": null,
+      "status": "unavailable"
+    }
+  ],
+  "stats": {
+    "stars": 0,
+    "forks": 0
+  },
+  "warnings": [
+    "GitHub HTTP 403: /repos/hrmcngs/github-stats-charts"
+  ],
+  "pendingRepos": [
+    "hrmcngs/hrmcngs",
+    "yuqiuwuu/yuqiuwuu"
+  ]
 }

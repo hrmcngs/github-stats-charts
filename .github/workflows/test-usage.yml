@@ -1,0 +1,31 @@
+name: Test usage tracking
+
+on:
+  push:
+    paths:
+      - 'scripts/count-usage.js'
+      - 'scripts/register-installation.js'
+      - 'tests/usage.test.js'
+      - 'bootstrap.sh'
+      - '.github/workflows/test-usage.yml'
+  pull_request:
+    paths:
+      - 'scripts/count-usage.js'
+      - 'scripts/register-installation.js'
+      - 'tests/usage.test.js'
+      - 'bootstrap.sh'
+      - '.github/workflows/test-usage.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node --test tests/usage.test.js
+      - run: bash -n bootstrap.sh

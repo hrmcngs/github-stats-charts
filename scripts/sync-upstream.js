@@ -23,7 +23,7 @@ async function main() {
   const { sha } = await response.json();
   if (!/^[0-9a-f]{40}$/.test(sha)) throw new Error('Invalid upstream commit');
 
-  const files = ['scripts/gen-charts.js', 'scripts/sync-upstream.js', 'src/js/charts.js', 'src/js/github-stats.js', 'src/js/embed.js'];
+  const files = ['scripts/gen-charts.js', 'scripts/sync-upstream.js', 'scripts/register-installation.js', 'src/js/charts.js', 'src/js/github-stats.js', 'src/js/embed.js'];
   const updates = await Promise.all(files.map(async (file) => {
     const result = await fetch(`https://raw.githubusercontent.com/${repository}/${sha}/${file}`);
     if (!result.ok) throw new Error(`${file}: HTTP ${result.status}`);
