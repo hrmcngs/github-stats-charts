@@ -7,8 +7,8 @@
   "cacheSeconds": 3600,
   "metric": "verified-public-installations",
   "status": "ok",
-  "checkedAt": "2026-11-25T16:23:56.044Z",
-  "lastSuccessfulAt": "2026-11-25T16:23:56.044Z",
+  "checkedAt": "2026-11-26T15:58:25.644Z",
+  "lastSuccessfulAt": "2026-11-26T15:58:25.644Z",
   "repos": [
     "hrmcngs/hrmcngs",
     "yuqiuwuu/yuqiuwuu"
@@ -18,14 +18,14 @@
       "repository": "hrmcngs/hrmcngs",
       "evidence": "generator",
       "registered": false,
-      "lastVerifiedAt": "2026-11-25T16:23:56.044Z",
+      "lastVerifiedAt": "2026-11-26T15:58:25.644Z",
       "status": "verified"
     },
     {
       "repository": "yuqiuwuu/yuqiuwuu",
       "evidence": "generator",
       "registered": false,
-      "lastVerifiedAt": "2026-11-25T16:23:56.044Z",
+      "lastVerifiedAt": "2026-11-26T15:58:25.644Z",
       "status": "verified"
     }
   ],
